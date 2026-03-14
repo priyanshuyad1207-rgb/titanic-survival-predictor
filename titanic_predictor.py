@@ -14,8 +14,6 @@ from sklearn.metrics import (
 )
 
 
-# ── STEP 2: Load data ────────────────────────────────────────
-# Dataset is built into seaborn — no download needed!
 df = sns.load_dataset('titanic')
 
 print("Shape:", df.shape)
@@ -26,20 +24,16 @@ print("\nMissing values:")
 print(df.isnull().sum())
 
 
-# ── STEP 3: Explore the data ─────────────────────────────────
-fig, axes = plt.subplots(1, 3, figsize=(14, 4))
-
-# Survival by gender
+fig, axes = plt.subplots(1, 3, figsize=(14, 4)
+                         
 sns.barplot(data=df, x='sex', y='survived', ax=axes[0], palette='Set2')
 axes[0].set_title('Survival rate by gender')
 axes[0].set_ylabel('Survival rate')
 
-# Survival by passenger class
 sns.barplot(data=df, x='pclass', y='survived', ax=axes[1], palette='Set2')
 axes[1].set_title('Survival rate by class')
 axes[1].set_xlabel('Passenger class (1=first)')
 
-# Age distribution by survival
 df[df['survived'] == 1]['age'].dropna().hist(ax=axes[2], alpha=0.6, label='Survived', bins=20, color='steelblue')
 df[df['survived'] == 0]['age'].dropna().hist(ax=axes[2], alpha=0.6, label='Died', bins=20, color='salmon')
 axes[2].set_title('Age distribution')
@@ -51,27 +45,21 @@ plt.show()
 print("Saved: exploration.png")
 
 
-# ── STEP 4: Feature engineering ──────────────────────────────
-# Select useful columns
 features = ['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'embarked']
 target = 'survived'
 
 data = df[features + [target]].copy()
 
-# Fill missing values
 data['age'].fillna(data['age'].median(), inplace=True)
 data['fare'].fillna(data['fare'].median(), inplace=True)
 data['embarked'].fillna(data['embarked'].mode()[0], inplace=True)
 
-# Encode categorical columns
 le = LabelEncoder()
-data['sex'] = le.fit_transform(data['sex'])        # male=1, female=0
+data['sex'] = le.fit_transform(data['sex'])        
 data['embarked'] = le.fit_transform(data['embarked'])
 
-# New feature: family size
 data['family_size'] = data['sibsp'] + data['parch'] + 1
 
-# New feature: is alone?
 data['is_alone'] = (data['family_size'] == 1).astype(int)
 
 print("\nFeatures after engineering:")
@@ -79,7 +67,6 @@ print(data.head())
 print("\nNo missing values?", data.isnull().sum().sum() == 0)
 
 
-# ── STEP 5: Split data ───────────────────────────────────────
 X = data.drop(target, axis=1)
 y = data[target]
 
@@ -90,7 +77,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"\nTrain size: {len(X_train)} | Test size: {len(X_test)}")
 
 
-# ── STEP 6: Train models ─────────────────────────────────────
 models = {
     'Logistic Regression': LogisticRegression(max_iter=500, random_state=42),
     'Random Forest':       RandomForestClassifier(n_estimators=100, random_state=42),
@@ -109,7 +95,6 @@ for name, model in models.items():
     print(classification_report(y_test, preds, target_names=['Died', 'Survived']))
 
 
-# ── STEP 7: Confusion matrix ─────────────────────────────────
 best_name = max(results, key=lambda k: results[k]['accuracy'])
 best = results[best_name]
 
@@ -126,7 +111,6 @@ plt.show()
 print("Saved: confusion_matrix.png")
 
 
-# ── STEP 8: Feature importance (Random Forest) ───────────────
 rf = results['Random Forest']['model']
 importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values()
 
@@ -140,7 +124,6 @@ plt.show()
 print("Saved: feature_importance.png")
 
 
-# ── STEP 9: Predict on new passengers ────────────────────────
 def predict_survival(pclass, sex, age, sibsp, parch, fare, embarked):
     """
     Predict survival for a custom passenger.
@@ -166,7 +149,6 @@ def predict_survival(pclass, sex, age, sibsp, parch, fare, embarked):
     return pred, prob
 
 
-# Try some examples
 print("\n--- Custom predictions ---")
 predict_survival(pclass=1, sex='female', age=28, sibsp=0, parch=0, fare=100, embarked='S')
 predict_survival(pclass=3, sex='male',   age=22, sibsp=1, parch=0, fare=7,   embarked='S')
